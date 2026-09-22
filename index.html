@@ -30,6 +30,8 @@
       width: 100%;
       max-width: 460px;
 
+      position: relative;
+
       background: rgba(255, 255, 255, 0.96);
 
       padding: 42px 36px;
@@ -130,28 +132,27 @@
       box-shadow: 0 0 0 3px rgba(113, 139, 115, 0.12);
     }
 
-    /* Fish Decoration */
-
-.input-box {
-  position: relative;
-}
+/* Fish Decoration */
 
 .fish {
   position: absolute;
-  width: 58px;
+
+  width: 75px;
   height: auto;
-  z-index: 2;
+
+  z-index: 3;
+
   pointer-events: none;
 }
 
 .fish-left {
   top: -35px;
-  left: -35px;
+  left: -45px;
 }
 
 .fish-right {
   bottom: -35px;
-  right: -35px;
+  right: -45px;
 }
     
     /* Button */
@@ -291,6 +292,9 @@
 
   <div class="container">
 
+    <img src="HUIHUI.png" class="fish fish-left" alt="">
+    <img src="CHUCHU.png" class="fish fish-right" alt="">
+    
 <!-- PBUM Logo -->
 <div class="logo">
   <img src="PBUMLOGO.png" alt="PBUM Logo">
