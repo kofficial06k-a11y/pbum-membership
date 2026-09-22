@@ -1,5 +1,12 @@
 const { google } = require("googleapis");
 
+function normalize(value) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, "")
+    .toLowerCase();
+}
+
 module.exports = async (req, res) => {
   if (req.method !== "GET") {
     return res.status(405).json({
@@ -9,7 +16,7 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const studentId = String(req.query.studentId || "").trim();
+    const studentId = normalize(req.query.studentId || "");
 
     if (!studentId) {
       return res.status(400).json({
@@ -35,18 +42,55 @@ module.exports = async (req, res) => {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: "Members!A:AZ"
+      range: "'Members'!A:AZ"
     });
 
     const rows = response.data.values || [];
 
+    if (rows.length === 0) {
+      return res.status(404).json({
+        found: false,
+        error: "Database is empty"
+      });
+    }
+
+    // 第一行是表头
+    const headers = rows[0];
+
+    // 自动寻找 Student ID / Matric Number 的表头
+    const studentIdColumn = headers.findIndex(header =>
+      normalize(header).includes("matricnumber")
+    );
+
+    // 自动寻找 MEMBER ID 的表头
+    const memberIdColumn = headers.findIndex(header =>
+      normalize(header) === "memberid"
+    );
+
+    // 找不到 Student ID 表头
+    if (studentIdColumn === -1) {
+      return res.status(500).json({
+        found: false,
+        error: "Student ID column not found"
+      });
+    }
+
+    // 找不到 MEMBER ID 表头
+    if (memberIdColumn === -1) {
+      return res.status(500).json({
+        found: false,
+        error: "MEMBER ID column not found"
+      });
+    }
+
+    // 从第二行开始寻找 Student ID
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
 
-      const sheetStudentIdmemberId = String(row[0] || "").trim();
-      const memberId = String(row[30] || "").trim();
+      const sheetStudentId = normalize(row[studentIdColumn]);
+      const memberId = String(row[memberIdColumn] || "").trim();
 
-      if (sheetStudentId === studentId) {
+      if (sheetStudentId === studentId && memberId) {
         return res.status(200).json({
           found: true,
           memberId: memberId
@@ -55,7 +99,8 @@ module.exports = async (req, res) => {
     }
 
     return res.status(404).json({
-      found: false
+      found: false,
+      error: "Student ID not found"
     });
 
   } catch (error) {
@@ -63,7 +108,7 @@ module.exports = async (req, res) => {
 
     return res.status(500).json({
       found: false,
-      error: "Server error"
+      error: error.message
     });
   }
 };
