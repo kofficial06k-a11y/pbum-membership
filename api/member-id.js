@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
 
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: "Members!A:F"
+      range: "Members!E:AI"
     });
 
     const rows = response.data.values || [];
@@ -43,8 +43,8 @@ module.exports = async (req, res) => {
     for (let i = 1; i < rows.length; i++) {
       const row = rows[i];
 
-      const memberId = String(row[0] || "").trim();
-      const sheetStudentId = String(row[2] || "").trim();
+      const sheetStudentIdmemberId = String(row[0] || "").trim();
+      const memberId = String(row[30] || "").trim();
 
       if (sheetStudentId === studentId) {
         return res.status(200).json({
